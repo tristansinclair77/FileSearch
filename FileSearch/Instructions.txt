@@ -1,0 +1,5 @@
+﻿Implement these changes:
+1) The folder depth dropdown does nothing. I have a test folder structure set up and I can only ever find the item searched within the selected folder.
+Reminder: "Folder Depth" of 1 should ONLY be within the selected folder. A depth of 2 searches folders within the selected folder as well. 3 is folders within folders within selected, and so on.
+
+Update the README.md with the changes/adjustments from this task if necessary.
