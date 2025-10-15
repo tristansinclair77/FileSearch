@@ -77,7 +77,7 @@
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
                         
-                        <!-- Section 1: Search Input, Depth Dropdown, and Search Button Panel (left) -->
+                        <!-- Section 1: Search Input, File Type Filter, Depth Dropdown, and Search Button Panel (left) -->
                         <Border Grid.Row="0" Grid.Column="0"
                                 Background="#F0F2F5"
                                 BorderBrush="#D1D9E0"
@@ -92,9 +92,10 @@
                                                   Color="#000000"/>
                             </Border.Effect>
                             <StackPanel Orientation="Vertical">
-                                <!-- Search TextBox with Depth Dropdown to the right -->
+                                <!-- Search TextBox with File Type Filter and Depth Dropdown -->
                                 <Grid Margin="0,0,0,15">
                                     <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
                                         <RowDefinition Height="Auto"/>
@@ -108,23 +109,63 @@
                                                FontSize="14"
                                                Foreground="#2C3E50"/>
                                                
-                                    <!-- Folder Depth Label (above the dropdown) -->
-                                    <TextBlock Grid.Row="1"
-                                               Text="📁 Folder Depth"
-                                               FontWeight="SemiBold" 
-                                               Margin="0,8,0,4"
-                                               FontSize="12"
-                                               HorizontalAlignment="Right"
-                                               Foreground="#6B7280"/>
-                                               
-                                    <!-- Search Input and Depth Dropdown -->
-                                    <Grid Grid.Row="2">
+                                    <!-- File Type Filter and Folder Depth Labels -->
+                                    <Grid Grid.Row="1" Margin="0,8,0,4">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
                                             <ColumnDefinition Width="100"/>
                                         </Grid.ColumnDefinitions>
                                         
-                                        <!-- Search TextBox -->
+                                        <TextBlock Grid.Column="0"
+                                                   Text="📄 File Types"
+                                                   FontWeight="SemiBold" 
+                                                   FontSize="12"
+                                                   Foreground="#6B7280"/>
+                                                   
+                                        <TextBlock Grid.Column="1"
+                                                   Text="📁 Folder Depth"
+                                                   FontWeight="SemiBold" 
+                                                   FontSize="12"
+                                                   HorizontalAlignment="Right"
+                                                   Foreground="#6B7280"/>
+                                    </Grid>
+                                               
+                                    <!-- Search Input -->
+                                    <Border Grid.Row="2"
+                                            Background="White"
+                                            BorderBrush="#D1D9E0"
+                                            BorderThickness="2"
+                                            CornerRadius="8"
+                                            Margin="0,0,0,8">
+                                        <Border.Effect>
+                                            <DropShadowEffect ShadowDepth="1" 
+                                                              BlurRadius="3" 
+                                                              Opacity="0.1"
+                                                              Color="#000000"/>
+                                        </Border.Effect>
+                                        <TextBox x:Name="SearchTextBox" 
+                                                 Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                                 Height="40" 
+                                                 FontSize="14" 
+                                                 Padding="15,10" 
+                                                 BorderThickness="0"
+                                                 Background="Transparent"
+                                                 IsEnabled="{Binding IsNotSearching}"
+                                                 Style="{DynamicResource ModernTextBoxStyle}">
+                                            <TextBox.InputBindings>
+                                                <KeyBinding Key="Enter" Command="{Binding SearchCommand}" />
+                                            </TextBox.InputBindings>
+                                        </TextBox>
+                                    </Border>
+                                    
+                                    <!-- File Type Filter and Depth Dropdown Row -->
+                                    <Grid Grid.Row="3">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="100"/>
+                                        </Grid.ColumnDefinitions>
+                                        
+                                        <!-- File Type Filter Dropdown -->
                                         <Border Grid.Column="0"
                                                 Background="White"
                                                 BorderBrush="#D1D9E0"
@@ -137,19 +178,42 @@
                                                                   Opacity="0.1"
                                                                   Color="#000000"/>
                                             </Border.Effect>
-                                            <TextBox x:Name="SearchTextBox" 
-                                                     Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                                                     Height="40" 
-                                                     FontSize="14" 
-                                                     Padding="15,10" 
-                                                     BorderThickness="0"
-                                                     Background="Transparent"
-                                                     IsEnabled="{Binding IsNotSearching}"
-                                                     Style="{DynamicResource ModernTextBoxStyle}">
-                                                <TextBox.InputBindings>
-                                                    <KeyBinding Key="Enter" Command="{Binding SearchCommand}" />
-                                                </TextBox.InputBindings>
-                                            </TextBox>
+                                            <ComboBox ItemsSource="{Binding FileTypeFilters}"
+                                                      Height="40"
+                                                      FontSize="13"
+                                                      Padding="10,8"
+                                                      BorderThickness="0"
+                                                      Background="Transparent"
+                                                      IsEnabled="{Binding IsNotSearching}"
+                                                      Style="{DynamicResource ModernComboBoxStyle}">
+                                                <ComboBox.ToolTip>
+                                                    <ToolTip Content="Select file types to include in search results"/>
+                                                </ComboBox.ToolTip>
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <CheckBox IsChecked="{Binding IsSelected}"
+                                                                  Content="{Binding FileType}"
+                                                                  Margin="2"
+                                                                  VerticalContentAlignment="Center">
+                                                            <CheckBox.Style>
+                                                                <Style TargetType="CheckBox">
+                                                                    <Setter Property="FontWeight" Value="Normal"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding FileType}" Value="All">
+                                                                            <Setter Property="FontWeight" Value="Bold"/>
+                                                                            <Setter Property="Foreground" Value="#10B981"/>
+                                                                        </DataTrigger>
+                                                                        <DataTrigger Binding="{Binding FileType}" Value="None">
+                                                                            <Setter Property="FontWeight" Value="Bold"/>
+                                                                            <Setter Property="Foreground" Value="#EF4444"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </CheckBox.Style>
+                                                        </CheckBox>
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
                                         </Border>
                                         
                                         <!-- Depth Dropdown -->

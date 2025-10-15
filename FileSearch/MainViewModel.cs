@@ -16,6 +16,31 @@ using System.Windows.Media;
 namespace FileSearch
 {
     /// <summary>
+    /// Model class for file type filter options
+    /// </summary>
+    public class FileTypeFilter : INotifyPropertyChanged
+    {
+        private bool _isSelected;
+        
+        public string FileType { get; set; }
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set
+            {
+                _isSelected = value;
+                OnPropertyChanged();
+            }
+        }
+        
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+    }
+
+    /// <summary>
     /// Main ViewModel for the FileSearch application implementing MVVM pattern
     /// </summary>
     public class MainViewModel : INotifyPropertyChanged
@@ -48,8 +73,10 @@ namespace FileSearch
             _searchService = new SearchService();
             SearchResults = new();
             SavedSearches = new();
+            FileTypeFilters = new();
             
             InitializeCommands();
+            InitializeFileTypeFilters();
             LoadSavedSearchesList();
         }
 
@@ -57,6 +84,7 @@ namespace FileSearch
 
         public ObservableCollection<SearchResult> SearchResults { get; }
         public ObservableCollection<ComboBoxItem> SavedSearches { get; }
+        public ObservableCollection<FileTypeFilter> FileTypeFilters { get; }
 
         public string SearchText
         {
@@ -254,6 +282,8 @@ namespace FileSearch
         public ICommand OpenFolderCommand { get; private set; }
         public ICommand OpenFileCommand { get; private set; }
         public ICommand DeleteFileCommand { get; private set; }
+        public ICommand SelectAllFileTypesCommand { get; private set; }
+        public ICommand SelectNoneFileTypesCommand { get; private set; }
 
         private void InitializeCommands()
         {
@@ -267,6 +297,123 @@ namespace FileSearch
             OpenFolderCommand = new RelayCommand<SearchResult>(OpenFolder, result => result != null && !result.IsMissing);
             OpenFileCommand = new RelayCommand<SearchResult>(OpenFile, result => result != null && !result.IsMissing);
             DeleteFileCommand = new RelayCommand<SearchResult>(DeleteFile, result => result != null && !result.IsMissing);
+            SelectAllFileTypesCommand = new RelayCommand(_ => SelectAllFileTypes());
+            SelectNoneFileTypesCommand = new RelayCommand(_ => SelectNoneFileTypes());
+        }
+
+        #endregion
+
+        #region File Type Filter Methods
+
+        private void InitializeFileTypeFilters()
+        {
+            FileTypeFilters.Clear();
+            
+            // Add special "All" and "None" options at the top
+            var allFilter = new FileTypeFilter { FileType = "All", IsSelected = true };
+            var noneFilter = new FileTypeFilter { FileType = "None", IsSelected = false };
+            
+            // Subscribe to property change events for special filters
+            allFilter.PropertyChanged += AllFilter_PropertyChanged;
+            noneFilter.PropertyChanged += NoneFilter_PropertyChanged;
+            
+            FileTypeFilters.Add(allFilter);
+            FileTypeFilters.Add(noneFilter);
+            
+            // Add common file type filters
+            var commonFileTypes = new[]
+            {
+                "Folder", ".txt", ".doc", ".docx", ".pdf", ".xls", ".xlsx", 
+                ".ppt", ".pptx", ".jpg", ".jpeg", ".png", ".gif", ".bmp",
+                ".mp3", ".mp4", ".avi", ".mov", ".wav", ".zip", ".rar",
+                ".exe", ".dll", ".cs", ".js", ".html", ".css", ".xml",
+                ".json", ".log", "No Extension"
+            };
+
+            foreach (var fileType in commonFileTypes)
+            {
+                var filter = new FileTypeFilter { FileType = fileType, IsSelected = true };
+                filter.PropertyChanged += FileTypeFilter_PropertyChanged;
+                FileTypeFilters.Add(filter);
+            }
+        }
+
+        private void AllFilter_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(FileTypeFilter.IsSelected) && sender is FileTypeFilter allFilter)
+            {
+                if (allFilter.IsSelected)
+                {
+                    SelectAllFileTypes(skipAllUpdate: true);
+                }
+            }
+        }
+
+        private void NoneFilter_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(FileTypeFilter.IsSelected) && sender is FileTypeFilter noneFilter)
+            {
+                if (noneFilter.IsSelected)
+                {
+                    SelectNoneFileTypes(skipNoneUpdate: true);
+                }
+            }
+        }
+
+        private void FileTypeFilter_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(FileTypeFilter.IsSelected))
+            {
+                UpdateSpecialFilterStates();
+            }
+        }
+
+        private void SelectAllFileTypes(bool skipAllUpdate = false)
+        {
+            // Select all regular file type filters (excluding "All" and "None")
+            for (int i = 2; i < FileTypeFilters.Count; i++)
+            {
+                FileTypeFilters[i].IsSelected = true;
+            }
+            
+            if (!skipAllUpdate)
+            {
+                FileTypeFilters[0].IsSelected = true;  // All
+                FileTypeFilters[1].IsSelected = false; // None
+            }
+        }
+
+        private void SelectNoneFileTypes(bool skipNoneUpdate = false)
+        {
+            // Deselect all regular file type filters (excluding "All" and "None")
+            for (int i = 2; i < FileTypeFilters.Count; i++)
+            {
+                FileTypeFilters[i].IsSelected = false;
+            }
+            
+            if (!skipNoneUpdate)
+            {
+                FileTypeFilters[0].IsSelected = false; // All
+                FileTypeFilters[1].IsSelected = true;  // None
+            }
+        }
+
+        private void UpdateSpecialFilterStates()
+        {
+            var regularFilters = FileTypeFilters.Skip(2).ToList();
+            var allSelected = regularFilters.All(f => f.IsSelected);
+            var noneSelected = regularFilters.All(f => !f.IsSelected);
+
+            // Temporarily unsubscribe to prevent recursive calls
+            FileTypeFilters[0].PropertyChanged -= AllFilter_PropertyChanged;
+            FileTypeFilters[1].PropertyChanged -= NoneFilter_PropertyChanged;
+
+            FileTypeFilters[0].IsSelected = allSelected;  // All
+            FileTypeFilters[1].IsSelected = noneSelected; // None
+
+            // Resubscribe
+            FileTypeFilters[0].PropertyChanged += AllFilter_PropertyChanged;
+            FileTypeFilters[1].PropertyChanged += NoneFilter_PropertyChanged;
         }
 
         #endregion
@@ -368,8 +515,11 @@ namespace FileSearch
                         return;
                     }
 
+                    // Filter results based on selected file types
+                    var filteredResults = FilterResultsByFileType(results);
+
                     // Add results to ObservableCollection on UI thread
-                    var resultsList = results.ToList();
+                    var resultsList = filteredResults.ToList();
                     StatusText = $"Adding {resultsList.Count} results...";
                     
                     await Application.Current.Dispatcher.InvokeAsync(() =>
@@ -430,6 +580,28 @@ namespace FileSearch
                     _searchCancellationTokenSource = null;
                 }
             }
+        }
+
+        private IEnumerable<SearchResult> FilterResultsByFileType(IEnumerable<SearchResult> results)
+        {
+            // Get selected file types (excluding "All" and "None")
+            var selectedFileTypes = FileTypeFilters
+                .Skip(2)
+                .Where(f => f.IsSelected)
+                .Select(f => f.FileType)
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            // If no specific types are selected, return empty results (not all results)
+            if (!selectedFileTypes.Any())
+            {
+                return Enumerable.Empty<SearchResult>();
+            }
+
+            return results.Where(result =>
+            {
+                var fileType = result.FileType;
+                return selectedFileTypes.Contains(fileType);
+            });
         }
 
         private void SaveSession()
@@ -507,7 +679,7 @@ namespace FileSearch
                 
                 StatusText = $"Loaded {SearchResults.Count} results from {searchSession.SavedAt:yyyy-MM-dd HH:mm} ({missingCount} missing)";
                 
-                string missingInfo = missingCount > 0 ? $"\n?? {missingCount} items are no longer available" : "";
+                string missingInfo = missingCount > 0 ? $"\n? {missingCount} items are no longer available" : "";
                 MessageBox.Show($"Search session loaded successfully.\n\nLoaded: {SearchResults.Count} items from {searchSession.SavedAt:yyyy-MM-dd HH:mm}{missingInfo}", 
                               "Loaded", MessageBoxButton.OK, MessageBoxImage.Information);
             }
@@ -661,20 +833,20 @@ namespace FileSearch
                 // Update metadata display
                 MetadataSearchTerm = $"?? Search Term: {session.SearchTerm}";
                 MetadataSearchPath = $"?? Root Path: {(string.IsNullOrEmpty(session.SearchPath) ? "Not specified" : session.SearchPath)}";
-                MetadataTimestamp = $"? Saved: {session.SavedAt:yyyy-MM-dd HH:mm:ss}";
+                MetadataTimestamp = $"?? Saved: {session.SavedAt:yyyy-MM-dd HH:mm:ss}";
                 
                 MetadataTotalResults = $"?? Total Results: {session.TotalResults}";
                 MetadataFileStats = $"?? Files: {session.FileCount} | ?? Folders: {session.DirectoryCount}";
                 
                 if (session.SearchDurationSeconds > 0)
-                    MetadataSearchDuration = $"?? Search Duration: {session.SearchDurationSeconds:F2} seconds";
+                    MetadataSearchDuration = $"? Search Duration: {session.SearchDurationSeconds:F2} seconds";
                 else
-                    MetadataSearchDuration = "?? Search Duration: Not recorded";
+                    MetadataSearchDuration = "? Search Duration: Not recorded";
                 
                 // Update header with missing file info
                 if (missingCount > 0)
                 {
-                    SessionHeaderText = $"Loaded Search Session (?? {missingCount} items missing)";
+                    SessionHeaderText = $"Loaded Search Session (? {missingCount} items missing)";
                     SessionHeaderForeground = new SolidColorBrush(Colors.Orange);
                 }
                 else
