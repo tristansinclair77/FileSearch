@@ -58,6 +58,7 @@ namespace FileSearch
         private ComboBoxItem _selectedSavedSearch;
         private int _maxDepth = 1; // Default to 1 as requested
         private bool _isDarkMode = false; // Dark mode toggle
+        private string _selectedRecentFolder; // Recent folders dropdown
         
         // Metadata display properties
         private string _metadataSearchTerm = string.Empty;
@@ -75,10 +76,12 @@ namespace FileSearch
             SearchResults = new();
             SavedSearches = new();
             FileTypeFilters = new();
+            RecentFolders = new();
             
             InitializeCommands();
             InitializeFileTypeFilters();
             LoadSavedSearchesList();
+            LoadRecentFolders();
         }
 
         #region Properties
@@ -86,6 +89,7 @@ namespace FileSearch
         public ObservableCollection<SearchResult> SearchResults { get; }
         public ObservableCollection<ComboBoxItem> SavedSearches { get; }
         public ObservableCollection<FileTypeFilter> FileTypeFilters { get; }
+        public ObservableCollection<string> RecentFolders { get; }
 
         public string SearchText
         {
@@ -207,6 +211,24 @@ namespace FileSearch
         /// </summary>
         public string DarkModeText => IsDarkMode ? "?? Dark Mode" : "?? Light Mode";
 
+        /// <summary>
+        /// Gets or sets the selected recent folder from the dropdown
+        /// </summary>
+        public string SelectedRecentFolder
+        {
+            get => _selectedRecentFolder;
+            set
+            {
+                _selectedRecentFolder = value;
+                OnPropertyChanged();
+                if (!string.IsNullOrEmpty(value))
+                {
+                    SelectedFolderPath = value;
+                    StatusText = $"Selected recent folder: {value}";
+                }
+            }
+        }
+
         // Metadata display properties
         public string MetadataSearchTerm
         {
@@ -305,6 +327,7 @@ namespace FileSearch
         public ICommand SelectAllFileTypesCommand { get; private set; }
         public ICommand SelectNoneFileTypesCommand { get; private set; }
         public ICommand ToggleDarkModeCommand { get; private set; }
+        public ICommand SelectRecentFolderCommand { get; private set; }
 
         private void InitializeCommands()
         {
@@ -321,6 +344,7 @@ namespace FileSearch
             SelectAllFileTypesCommand = new RelayCommand(_ => SelectAllFileTypes());
             SelectNoneFileTypesCommand = new RelayCommand(_ => SelectNoneFileTypes());
             ToggleDarkModeCommand = new RelayCommand(_ => ToggleDarkMode());
+            SelectRecentFolderCommand = new RelayCommand<string>(SelectRecentFolder);
         }
 
         #endregion
@@ -460,6 +484,8 @@ namespace FileSearch
                 if (!string.IsNullOrEmpty(folderPath))
                 {
                     SelectedFolderPath = folderPath;
+                    // Add to recent folders
+                    AddToRecentFolders(folderPath);
                     // Don't paste into search box as per requirement #3
                     StatusText = $"Selected folder: {folderPath}";
                 }
@@ -823,6 +849,15 @@ namespace FileSearch
             }
         }
 
+        private void SelectRecentFolder(string folderPath)
+        {
+            if (!string.IsNullOrEmpty(folderPath) && Directory.Exists(folderPath))
+            {
+                SelectedFolderPath = folderPath;
+                StatusText = $"Selected recent folder: {folderPath}";
+            }
+        }
+
         #endregion
 
         #region Helper Methods
@@ -924,6 +959,82 @@ namespace FileSearch
             return 0;
         }
 
+        private void LoadRecentFolders()
+        {
+            try
+            {
+                RecentFolders.Clear();
+                var tempPath = Path.GetTempPath();
+                var recentFoldersFile = Path.Combine(tempPath, "FileSearch_RecentFolders.txt");
+                
+                if (File.Exists(recentFoldersFile))
+                {
+                    var folders = File.ReadAllLines(recentFoldersFile)
+                        .Where(line => !string.IsNullOrWhiteSpace(line) && Directory.Exists(line))
+                        .Take(5) // Only keep the last 5 valid folders
+                        .ToList();
+                    
+                    foreach (var folder in folders)
+                    {
+                        RecentFolders.Add(folder);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                StatusText = $"Error loading recent folders: {ex.Message}";
+            }
+        }
+
+        private void AddToRecentFolders(string folderPath)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(folderPath) || !Directory.Exists(folderPath))
+                    return;
+
+                // Remove if already exists to avoid duplicates
+                if (RecentFolders.Contains(folderPath))
+                {
+                    RecentFolders.Remove(folderPath);
+                }
+
+                // Add to the beginning
+                RecentFolders.Insert(0, folderPath);
+
+                // Keep only the last 5 folders
+                while (RecentFolders.Count > 5)
+                {
+                    RecentFolders.RemoveAt(RecentFolders.Count - 1);
+                }
+
+                // Save to temporary file
+                SaveRecentFolders();
+            }
+            catch (Exception ex)
+            {
+                StatusText = $"Error adding to recent folders: {ex.Message}";
+            }
+        }
+
+        private void SaveRecentFolders()
+        {
+            try
+            {
+                var tempPath = Path.GetTempPath();
+                var recentFoldersFile = Path.Combine(tempPath, "FileSearch_RecentFolders.txt");
+                
+                File.WriteAllLines(recentFoldersFile, RecentFolders);
+            }
+            catch (Exception ex)
+            {
+                // Silently fail - this is not critical functionality
+                System.Diagnostics.Debug.WriteLine($"Error saving recent folders: {ex.Message}");
+            }
+        }
+
+        #endregion
+
         /// <summary>
         /// Cleanup when the ViewModel is disposed
         /// </summary>
@@ -936,8 +1047,6 @@ namespace FileSearch
                 _searchCancellationTokenSource.Dispose();
             }
         }
-
-        #endregion
 
         #region INotifyPropertyChanged
 

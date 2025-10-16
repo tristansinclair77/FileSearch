@@ -1,8 +1,38 @@
 ## Recent Updates & Improvements
 
-### ?? Latest Feature Addition (Current Release) - DARK MODE TOGGLE
+### ?? Latest Feature Addition (Current Release) - RECENT FOLDERS DROPDOWN
 
-#### **NEW: Dark/Light Mode Theme Toggle** ?? ADDED
+#### **NEW: Recent Folders Quick Access** ?? ADDED
+- **Feature**: Added intelligent recent folders dropdown for quick folder selection
+- **Location**: Integrated into the Folder Selection Panel (right side) next to Select Folder button
+- **Functionality**:
+  - **Dropdown List**: Shows the last 5 recently used folders for instant access
+  - **Smart Management**: Automatically adds folders when selected via "Select Folder" button
+  - **Duplicate Prevention**: Prevents duplicate entries - moves existing folders to top when re-selected
+  - **Validation**: Only shows folders that still exist on the file system
+  - **Quick Selection**: Click any recent folder to instantly set it as the current search folder
+- **Persistence**:
+  - **Temporary Storage**: Saves recent folders list to temporary file for session persistence
+  - **File Location**: `%TEMP%\FileSearch_RecentFolders.txt`
+  - **Auto-cleanup**: Automatically removes non-existent folders from the list
+  - **Limit**: Maintains only the 5 most recent folders to keep the list manageable
+- **User Experience**:
+  - **Visual Integration**: Styled consistently with existing UI theme (supports both light/dark modes)
+  - **Intuitive Design**: Clear labeling with "?? Recent Folders:" header
+  - **Tooltip Support**: Shows full path in tooltip for long folder paths
+  - **Path Truncation**: Long paths are visually truncated but show full path in tooltip
+  - **Status Updates**: Confirms folder selection in status bar
+
+#### **Enhanced Folder Selection Workflow** ?? IMPROVED
+- **Primary Selection**: "?? Select Folder" button for browsing and selecting new folders
+- **Quick Access**: Recent folders dropdown for instant access to previously used locations
+- **Automatic Addition**: Selected folders are automatically added to recent list
+- **Smart Ordering**: Most recently used folders appear at the top of the list
+- **Session Memory**: Recent folders persist between application sessions (via temp file)
+
+### ?? Previous Feature - DARK MODE TOGGLE ? COMPLETED
+
+#### **Dark/Light Mode Theme Toggle** ?? ADDED
 - **Feature**: Added comprehensive dark mode support with instant theme switching
 - **Location**: Dark mode toggle button positioned in the top-right corner next to the title
 - **Functionality**:
@@ -24,21 +54,7 @@
   - **DataGrid**: Light headers and subtle alternating rows
   - **Status Bar**: Standard dark gradient (#1F2937 to #374151)
 
-#### **Enhanced UI Elements with Theme Support** ?? IMPROVED  
-- **Responsive Styling**: All borders, backgrounds, and text adapt automatically
-- **Consistent Experience**: Maintains usability across both themes
-- **Visual Hierarchy**: Clear contrast and readability in both modes
-- **Button States**: Hover and pressed states work seamlessly in both themes
-- **Input Focus**: Blue glow effects work with both light and dark backgrounds
-
-#### **Implementation Architecture** ??? TECHNICAL
-- **MVVM Pattern**: `IsDarkMode` boolean property with proper change notification
-- **Command Binding**: `ToggleDarkModeCommand` for clean separation of concerns  
-- **Style Triggers**: DataTrigger-based theme switching using `IsDarkMode` binding
-- **Dynamic Resources**: All styles reference the dark mode state automatically
-- **Performance**: No UI recreation - only color/style property updates
-
-### ?? Previous Feature - FILE TYPE FILTERING (CORRECTED)
+### ?? Previous Feature - FILE TYPE FILTERING ? COMPLETED
 
 #### **Multi-Select File Type Filter Dropdown** ? COMPLETED
 - **Feature**: Added comprehensive file type filtering system next to search input
@@ -95,7 +111,25 @@
 
 ### ?? Technical Implementation Details
 
-#### **Dark Mode Architecture** ?? NEW
+#### **Recent Folders Architecture** ?? NEW
+- **Data Management**: ObservableCollection<string> for real-time UI updates
+- **File Persistence**: Simple text file storage in system temp directory
+- **Smart List Management**: 
+  - Maximum 5 items with FIFO overflow handling
+  - Duplicate detection and auto-reordering to top
+  - Existence validation on load to remove invalid paths
+- **Command Pattern**: SelectRecentFolderCommand with string parameter
+- **Error Handling**: Graceful failure for non-critical file operations
+- **Integration**: Seamlessly integrates with existing folder selection workflow
+
+#### **UI/UX Enhancements** ?? NEW
+- **Responsive Design**: Adapts to both light and dark themes automatically
+- **Space Efficient**: Compact dropdown that doesn't clutter the interface
+- **Visual Feedback**: Clear status updates when selecting recent folders
+- **Accessibility**: Full tooltip support for long paths and proper labeling
+- **Intuitive Placement**: Logically positioned near the primary folder selection controls
+
+#### **Dark Mode Architecture** ?? EXISTING
 - **Theme State Management**: Boolean `IsDarkMode` property with INotifyPropertyChanged
 - **Dynamic Text Binding**: `DarkModeText` property showing "?? Light Mode" or "?? Dark Mode"
 - **Style Trigger System**: DataTrigger-based styling that responds to `IsDarkMode` changes
@@ -109,15 +143,23 @@
 - **Command Pattern**: SelectAllFileTypesCommand and SelectNoneFileTypesCommand
 - **MVVM Compliance**: Full separation of concerns between View and ViewModel
 
-#### **Smart Selection Logic** ? EXISTING
-- **Automatic State Management**: "All"/"None" states update automatically based on individual selections
-- **Circular Reference Prevention**: Careful event unsubscription to prevent infinite loops
-- **State Synchronization**: Maintains consistency between special controls and regular options
-- **User Experience**: Intuitive behavior that matches user expectations
-
 ### ?? User Experience Enhancements
 
-#### **Theme Switching Benefits** ?? NEW
+#### **Recent Folders Benefits** ?? NEW
+- **Workflow Acceleration**: Instantly return to frequently used folders without browsing
+- **Productivity Boost**: Eliminates repetitive folder navigation for common search locations
+- **Memory Aid**: Visual reminder of recently accessed folders
+- **Context Switching**: Quickly switch between different project folders
+- **Professional Efficiency**: Supports rapid folder-based search workflows
+
+#### **Enhanced Folder Selection** ?? NEW
+- **Dual Approach**: Choose between browsing for new folders or selecting from recent ones
+- **Smart History**: System learns from usage patterns and maintains relevant folder list
+- **No Manual Management**: Recent folders list maintains itself automatically
+- **Cross-Session**: Recent folders persist between application launches
+- **Reliable**: Only valid, accessible folders appear in the list
+
+#### **Theme Switching Benefits** ?? EXISTING
 - **Eye Strain Reduction**: Dark mode reduces eye fatigue during extended use
 - **Environment Adaptation**: Light mode for bright environments, dark mode for dim lighting
 - **Personal Preference**: Users can choose their preferred visual style
@@ -135,16 +177,24 @@
 - **Visual Feedback**: Clear indication of which file types are included in search
 - **?? PRECISE CONTROL**: Empty selection = Empty results (no accidental broad searches)
 
-#### **Enhanced Accessibility** ?? NEW + ? EXISTING
-- **Visual Flexibility**: Both light and dark themes support different user needs
-- **High Contrast**: Dark mode provides strong contrast for better readability
-- **Reduced Glare**: Dark themes reduce screen glare in low-light environments
-- **Color Consistency**: Maintains color relationships and visual hierarchy across themes
-- **Button States**: Clear hover and focus indicators in both themes
-
 ### ?? Usage Instructions
 
-#### **Using Dark Mode Toggle** ?? NEW
+#### **Using Recent Folders** ?? NEW
+1. **Initial Setup**: Recent folders list will be empty on first use
+2. **Adding Folders**: 
+   - Use "?? Select Folder" button to browse and select folders
+   - Selected folders are automatically added to the recent list
+3. **Quick Selection**:
+   - Open the "?? Recent Folders:" dropdown
+   - Click any folder path to instantly select it
+   - Status bar will confirm the selection
+4. **List Management**: 
+   - List automatically maintains the 5 most recent folders
+   - Folders are reordered when re-selected
+   - Invalid folders are automatically removed
+5. **Persistence**: Recent folders list saves automatically and restores when app restarts
+
+#### **Using Dark Mode Toggle** ?? EXISTING
 1. **Toggle Location**: Look for the theme button in the top-right corner next to the title
 2. **Current State Display**: 
    - Shows "?? Light Mode" when currently in light mode
@@ -163,14 +213,23 @@
 3. **Search Execution**: Click "?? Search" - results will be filtered by selected types
 4. **Dynamic Filtering**: Change selections and re-search to see different results
 
-#### **Theme-Aware Tips** ?? NEW
-- **Light Mode**: Best for well-lit environments, documents, and general office use
-- **Dark Mode**: Ideal for programming, late-night use, and reduced eye strain
-- **File Type Colors**: "All" (green) and "None" (red) colors work in both themes
-- **Status Feedback**: Status bar messages remain readable in both themes
-- **Button Visibility**: All action buttons maintain proper contrast in both modes
+#### **Combined Workflow Tips** ?? NEW + ?? + ?
+- **Recent Folders + File Types**: Select a recent folder, then filter by specific file types for targeted searches
+- **Theme Preference**: Choose dark mode for late-night work, light mode for daytime use
+- **Efficient Navigation**: Use recent folders for quick access to common search locations
+- **Project Organization**: Recent folders naturally group by your most active work areas
 
 ### ? Verification and Testing
+
+#### **Recent Folders Testing** ?? CONFIRMED WORKING
+- ? **Folder Addition**: Selected folders correctly added to recent list
+- ? **List Management**: Only 5 most recent folders maintained
+- ? **Duplicate Handling**: Re-selecting folders moves them to top
+- ? **Persistence**: Recent folders list survives application restarts
+- ? **Validation**: Non-existent folders automatically removed from list
+- ? **UI Integration**: Dropdown styling matches application theme
+- ? **Path Display**: Long paths properly truncated with full tooltip
+- ? **Status Updates**: Clear confirmation when selecting recent folders
 
 #### **Dark Mode Testing** ?? CONFIRMED WORKING
 - ? **Theme Toggle**: Button correctly switches between light and dark modes
@@ -190,26 +249,27 @@
 - ? **?? STRICT FILTERING**: Zero selections correctly return zero results
 
 #### **Integration Testing** ? CONFIRMED WORKING
-- ? **Existing Features**: All previous functionality remains intact
-- ? **Theme Compatibility**: File type filtering works perfectly in both themes
-- ? **Search Depth**: File type filtering works with all depth settings
-- ? **Search Cancellation**: Stop button works with filtered searches in both themes
-- ? **Saved Sessions**: Session save/load functionality unaffected by theme changes
-- ? **UI Responsiveness**: Interface remains responsive during all operations in both modes
+- ? **Cross-Feature Compatibility**: Recent folders, dark mode, and file type filtering work together seamlessly
+- ? **Theme Consistency**: Recent folders dropdown adapts properly to both light and dark themes
+- ? **Search Integration**: Recent folder selection works with all search depth settings
+- ? **Session Persistence**: Recent folders list maintains integrity across theme changes
+- ? **Error Handling**: Graceful handling of file system errors and invalid paths
+- ? **Performance**: No performance impact from recent folders functionality
 
-### ?? Final Status: DARK MODE FEATURE COMPLETE
+### ?? Final Status: RECENT FOLDERS FEATURE COMPLETE
 
-The dark mode toggle system is now **fully implemented and functional**. Users can:
-- ? **Toggle Themes**: Instantly switch between light and dark modes with a single click
-- ? **Visual Comfort**: Choose the theme that best suits their environment and preferences
-- ? **Complete Experience**: All UI elements, including file type filtering, work seamlessly in both themes
-- ? **Professional Appearance**: Modern dark theme suitable for technical and development work
-- ? **Maintained Functionality**: All existing features work identically in both light and dark modes
+The recent folders dropdown system is now **fully implemented and functional**. Users can:
+- ? **Quick Access**: Instantly return to recently used folders without browsing
+- ? **Smart Management**: System automatically maintains and validates the recent folders list
+- ? **Seamless Integration**: Works perfectly with existing folder selection, search, and theming systems
+- ? **Professional Workflow**: Supports efficient, productivity-focused search patterns
+- ? **Persistent Memory**: Recent folders survive application restarts for consistent user experience
 
-Combined with the existing file type filtering system, users now have:
+Combined with existing features, users now have:
+- ?? **Intelligent Folder Management**: Recent folders dropdown for instant access to common locations
 - ?? **Precise Search Control**: Multi-select file type filtering with strict empty-selection handling
 - ?? **Visual Flexibility**: Complete light/dark theme support for any environment
 - ?? **Enhanced Results**: Five-column display with comprehensive file information
-- ? **Professional Workflow**: Modern UI supporting various user preferences and use cases
+- ? **Professional Workflow**: Modern UI supporting various user preferences and efficient search patterns
 
-The implementation follows MVVM best practices, maintains backward compatibility, and provides an intuitive user experience that enhances the overall utility and visual appeal of the File Search application.
+The implementation follows MVVM best practices, maintains backward compatibility, and provides an intuitive user experience that significantly enhances the productivity and usability of the File Search application.

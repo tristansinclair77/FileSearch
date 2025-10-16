@@ -331,19 +331,104 @@
                                                  Style="{DynamicResource ReadOnlyTextBoxStyle}"/>
                                     </Border>
                                 </Grid>
-                                <!-- Select Folder Button (below folder path field) -->
-                                <Button Content="📁 Select Folder" 
-                                        Command="{Binding SelectFolderCommand}"
-                                        Background="#E74C3C" 
-                                        Foreground="White" 
-                                        Width="160" 
-                                        Height="42" 
-                                        FontWeight="SemiBold"
-                                        FontSize="13"
-                                        HorizontalAlignment="Left"
-                                        Cursor="Hand"
-                                        IsEnabled="{Binding IsNotSearching}"
-                                        Style="{DynamicResource PrimaryButtonStyle}"/>
+                                
+                                <!-- Buttons Row -->
+                                <Grid Margin="0,0,0,15">
+                                    <Grid.ColumnDefinitions>    
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    
+                                    <!-- Select Folder Button -->
+                                    <Button Grid.Column="0"
+                                            Content="📁 Select Folder" 
+                                            Command="{Binding SelectFolderCommand}"
+                                            Background="#E74C3C" 
+                                            Foreground="White" 
+                                            Height="42" 
+                                            FontWeight="SemiBold"
+                                            FontSize="13"
+                                            Margin="0,0,8,0"
+                                            Cursor="Hand"
+                                            IsEnabled="{Binding IsNotSearching}"
+                                            Style="{DynamicResource PrimaryButtonStyle}"/>
+                                            
+                                    <!-- Recent Folders Dropdown -->
+                                    <Button Grid.Column="1"
+                                            Content="📋"
+                                            Width="42"
+                                            Height="42"
+                                            Background="#9B59B6"
+                                            Foreground="White"
+                                            FontSize="16"
+                                            Cursor="Hand"
+                                            IsEnabled="{Binding IsNotSearching}"
+                                            Style="{DynamicResource PrimaryButtonStyle}">
+                                        <Button.ToolTip>
+                                            <ToolTip Content="Recent folders"/>
+                                        </Button.ToolTip>
+                                        <Button.ContextMenu>
+                                            <ContextMenu ItemsSource="{Binding RecentFolders}">
+                                                <ContextMenu.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <MenuItem Header="{Binding}" 
+                                                                  Command="{Binding DataContext.SelectRecentFolderCommand, RelativeSource={RelativeSource AncestorType=ContextMenu}}"
+                                                                  CommandParameter="{Binding}">
+                                                            <MenuItem.Style>
+                                                                <Style TargetType="MenuItem">
+                                                                    <Setter Property="MaxWidth" Value="400"/>
+                                                                    <Setter Property="ToolTip" Value="{Binding}"/>
+                                                                </Style>
+                                                            </MenuItem.Style>
+                                                        </MenuItem>
+                                                    </DataTemplate>
+                                                </ContextMenu.ItemTemplate>
+                                            </ContextMenu>
+                                        </Button.ContextMenu>
+                                    </Button>
+                                </Grid>
+                                
+                                <!-- Recent Folders Dropdown (alternative approach) -->
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    
+                                    <TextBlock Grid.Row="0"
+                                               Text="🕒 Recent Folders:" 
+                                               FontWeight="SemiBold" 
+                                               Margin="0,0,0,8"
+                                               FontSize="14"
+                                               Style="{DynamicResource LabelTextStyle}"/>
+                                               
+                                    <Border Grid.Row="1"
+                                            BorderThickness="2"
+                                            CornerRadius="8"
+                                            Style="{DynamicResource InputBorderStyle}">
+                                        <ComboBox ItemsSource="{Binding RecentFolders}"
+                                                  SelectedItem="{Binding SelectedRecentFolder}"
+                                                  Height="40"
+                                                  FontSize="12"
+                                                  Padding="15,8"
+                                                  BorderThickness="0"
+                                                  Background="Transparent"
+                                                  IsEnabled="{Binding IsNotSearching}"
+                                                  Style="{DynamicResource ModernComboBoxStyle}">
+                                            <ComboBox.ToolTip>
+                                                <ToolTip Content="Select from recently used folders"/>
+                                            </ComboBox.ToolTip>
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding}" 
+                                                               MaxWidth="300"
+                                                               TextTrimming="CharacterEllipsis"
+                                                               ToolTip="{Binding}"/>
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                    </Border>
+                                </Grid>
                             </StackPanel>
                         </Border>
                         
@@ -1044,7 +1129,7 @@
         
         <!-- DataGrid Styles -->
         
-        <!-- Modern DataGrid Style -->
+        <!-- ModernDataGrid Style -->
         <Style x:Key="ModernDataGridStyle" TargetType="DataGrid">
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="FontSize" Value="13"/>
