@@ -7,8 +7,19 @@
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
         Title="Excessive File Search" Height="700" Width="1100"
-        WindowStartupLocation="CenterScreen"
-        Background="#F7F9FC">
+        WindowStartupLocation="CenterScreen">
+    
+    <!-- Window Background bound to dark mode -->
+    <Window.Style>
+        <Style TargetType="Window">
+            <Setter Property="Background" Value="#F7F9FC"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsDarkMode}" Value="True">
+                    <Setter Property="Background" Value="#1F2937"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </Window.Style>
     
     <Window.DataContext>
         <local:MainViewModel />
@@ -18,41 +29,71 @@
         <KeyBinding Key="Enter" Command="{Binding SearchCommand}" />
     </Window.InputBindings>
     
-    <!-- Main Container without Drop Shadow -->
-    <Border Background="White" 
-            CornerRadius="12" 
+    <!-- Main Container with Dark Mode Support -->
+    <Border CornerRadius="12" 
             Margin="15"
             Padding="25">
+        <Border.Style>
+            <Style TargetType="Border">
+                <Setter Property="Background" Value="White"/>
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsDarkMode}" Value="True">
+                        <Setter Property="Background" Value="#374151"/>
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </Border.Style>
+        
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             
-            <!-- Title Section with Enhanced Styling (static) -->
-            <Border Grid.Row="0" 
-                    CornerRadius="8"
-                    Padding="20,15"
-                    Margin="0,0,0,25">
-                <Border.Background>
-                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                        <GradientStop Color="#667EEA" Offset="0"/>
-                        <GradientStop Color="#764BA2" Offset="1"/>
-                    </LinearGradientBrush>
-                </Border.Background>
-                <Border.Effect>
-                    <DropShadowEffect ShadowDepth="3" 
-                                      BlurRadius="8" 
-                                      Opacity="0.2"
-                                      Color="#667EEA"/>
-                </Border.Effect>
-                <TextBlock Text="Excessive File Search" 
-                           FontSize="28" 
-                           FontWeight="Bold" 
-                           HorizontalAlignment="Center" 
-                           Foreground="White"
-                           FontFamily="Segoe UI"/>
-            </Border>
+            <!-- Title Section with Dark Mode Support -->
+            <Grid Grid.Row="0" Margin="0,0,0,25">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                
+                <!-- Title -->
+                <Border Grid.Column="0"
+                        CornerRadius="8"
+                        Padding="20,15">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                            <GradientStop Color="#667EEA" Offset="0"/>
+                            <GradientStop Color="#764BA2" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <Border.Effect>
+                        <DropShadowEffect ShadowDepth="3" 
+                                          BlurRadius="8" 
+                                          Opacity="0.2"
+                                          Color="#667EEA"/>
+                    </Border.Effect>
+                    <TextBlock Text="Excessive File Search" 
+                               FontSize="28" 
+                               FontWeight="Bold" 
+                               HorizontalAlignment="Center" 
+                               Foreground="White"
+                               FontFamily="Segoe UI"/>
+                </Border>
+                
+                <!-- Dark Mode Toggle -->
+                <ToggleButton Grid.Column="1"
+                              IsChecked="{Binding IsDarkMode, Mode=OneWay}"
+                              Command="{Binding ToggleDarkModeCommand}"
+                              Content="{Binding DarkModeText}"
+                              VerticalAlignment="Center"
+                              Margin="15,0,0,0"
+                              Padding="15,10"
+                              FontSize="14"
+                              FontWeight="SemiBold"
+                              Cursor="Hand"
+                              Style="{DynamicResource DarkModeToggleStyle}"/>
+            </Grid>
 
             <!-- Scrollable Main Content -->
             <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
@@ -79,18 +120,10 @@
                         
                         <!-- Section 1: Search Input, File Type Filter, Depth Dropdown, and Search Button Panel (left) -->
                         <Border Grid.Row="0" Grid.Column="0"
-                                Background="#F0F2F5"
-                                BorderBrush="#D1D9E0"
-                                BorderThickness="2"
                                 CornerRadius="10"
                                 Padding="20"
-                                Margin="0,0,10,0">
-                            <Border.Effect>
-                                <DropShadowEffect ShadowDepth="2" 
-                                                  BlurRadius="6" 
-                                                  Opacity="0.1"
-                                                  Color="#000000"/>
-                            </Border.Effect>
+                                Margin="0,0,10,0"
+                                Style="{DynamicResource PanelBorderStyle}">
                             <StackPanel Orientation="Vertical">
                                 <!-- Search TextBox with File Type Filter and Depth Dropdown -->
                                 <Grid Margin="0,0,0,15">
@@ -107,7 +140,7 @@
                                                FontWeight="SemiBold" 
                                                Margin="0,0,0,8"
                                                FontSize="14"
-                                               Foreground="#2C3E50"/>
+                                               Style="{DynamicResource LabelTextStyle}"/>
                                                
                                     <!-- File Type Filter and Folder Depth Labels -->
                                     <Grid Grid.Row="1" Margin="0,8,0,4">
@@ -120,29 +153,22 @@
                                                    Text="📄 File Types"
                                                    FontWeight="SemiBold" 
                                                    FontSize="12"
-                                                   Foreground="#6B7280"/>
+                                                   Style="{DynamicResource SubLabelTextStyle}"/>
                                                    
                                         <TextBlock Grid.Column="1"
                                                    Text="📁 Folder Depth"
                                                    FontWeight="SemiBold" 
                                                    FontSize="12"
                                                    HorizontalAlignment="Right"
-                                                   Foreground="#6B7280"/>
+                                                   Style="{DynamicResource SubLabelTextStyle}"/>
                                     </Grid>
                                                
                                     <!-- Search Input -->
                                     <Border Grid.Row="2"
-                                            Background="White"
-                                            BorderBrush="#D1D9E0"
                                             BorderThickness="2"
                                             CornerRadius="8"
-                                            Margin="0,0,0,8">
-                                        <Border.Effect>
-                                            <DropShadowEffect ShadowDepth="1" 
-                                                              BlurRadius="3" 
-                                                              Opacity="0.1"
-                                                              Color="#000000"/>
-                                        </Border.Effect>
+                                            Margin="0,0,0,8"
+                                            Style="{DynamicResource InputBorderStyle}">
                                         <TextBox x:Name="SearchTextBox" 
                                                  Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                                                  Height="40" 
@@ -167,17 +193,10 @@
                                         
                                         <!-- File Type Filter Dropdown -->
                                         <Border Grid.Column="0"
-                                                Background="White"
-                                                BorderBrush="#D1D9E0"
                                                 BorderThickness="2"
                                                 CornerRadius="8"
-                                                Margin="0,0,8,0">
-                                            <Border.Effect>
-                                                <DropShadowEffect ShadowDepth="1" 
-                                                                  BlurRadius="3" 
-                                                                  Opacity="0.1"
-                                                                  Color="#000000"/>
-                                            </Border.Effect>
+                                                Margin="0,0,8,0"
+                                                Style="{DynamicResource InputBorderStyle}">
                                             <ComboBox ItemsSource="{Binding FileTypeFilters}"
                                                       Height="40"
                                                       FontSize="13"
@@ -218,16 +237,9 @@
                                         
                                         <!-- Depth Dropdown -->
                                         <Border Grid.Column="1"
-                                                Background="White"
-                                                BorderBrush="#D1D9E0"
                                                 BorderThickness="2"
-                                                CornerRadius="8">
-                                            <Border.Effect>
-                                                <DropShadowEffect ShadowDepth="1" 
-                                                                  BlurRadius="3" 
-                                                                  Opacity="0.1"
-                                                                  Color="#000000"/>
-                                            </Border.Effect>
+                                                CornerRadius="8"
+                                                Style="{DynamicResource InputBorderStyle}">
                                             <ComboBox SelectedValue="{Binding MaxDepth}"
                                                       Height="40"
                                                       FontSize="13"
@@ -287,18 +299,10 @@
                         
                         <!-- Section 2: Folder Selection Panel (right) -->
                         <Border Grid.Row="0" Grid.Column="1"
-                                Background="#F0F2F5"
-                                BorderBrush="#D1D9E0"
-                                BorderThickness="2"
                                 CornerRadius="10"
                                 Padding="20"
-                                Margin="10,0,0,0">
-                            <Border.Effect>
-                                <DropShadowEffect ShadowDepth="2" 
-                                                  BlurRadius="6" 
-                                                  Opacity="0.1"
-                                                  Color="#000000"/>
-                            </Border.Effect>
+                                Margin="10,0,0,0"
+                                Style="{DynamicResource PanelBorderStyle}">
                             <StackPanel Orientation="Vertical">
                                 <!-- Selected Folder Path Display -->
                                 <Grid Margin="0,0,0,15">
@@ -311,18 +315,11 @@
                                                FontWeight="SemiBold" 
                                                Margin="0,0,0,8"
                                                FontSize="14"
-                                               Foreground="#2C3E50"/>
+                                               Style="{DynamicResource LabelTextStyle}"/>
                                     <Border Grid.Row="1"
-                                            Background="White"
-                                            BorderBrush="#D1D9E0"
                                             BorderThickness="2"
-                                            CornerRadius="8">
-                                        <Border.Effect>
-                                            <DropShadowEffect ShadowDepth="1" 
-                                                              BlurRadius="3" 
-                                                              Opacity="0.1"
-                                                              Color="#000000"/>
-                                        </Border.Effect>
+                                            CornerRadius="8"
+                                            Style="{DynamicResource InputBorderStyle}">
                                         <TextBox Text="{Binding SelectedFolderDisplayText, Mode=OneWay}"
                                                  Height="40" 
                                                  FontSize="14" 
@@ -330,9 +327,8 @@
                                                  BorderThickness="0"
                                                  Background="Transparent"
                                                  IsReadOnly="True"
-                                                 Foreground="#6B7280"
                                                  FontStyle="Italic"
-                                                 Style="{DynamicResource ModernTextBoxStyle}"/>
+                                                 Style="{DynamicResource ReadOnlyTextBoxStyle}"/>
                                     </Border>
                                 </Grid>
                                 <!-- Select Folder Button (below folder path field) -->
@@ -353,18 +349,10 @@
                         
                         <!-- Section 3: Saved Searches Panel (full width below) -->
                         <Border Grid.Row="1" Grid.ColumnSpan="2"
-                                Background="#F0F2F5"
-                                BorderBrush="#D1D9E0"
-                                BorderThickness="2"
                                 CornerRadius="10"
                                 Padding="20"
-                                Margin="0,15,0,0">
-                            <Border.Effect>
-                                <DropShadowEffect ShadowDepth="2" 
-                                                  BlurRadius="6" 
-                                                  Opacity="0.1"
-                                                  Color="#000000"/>
-                            </Border.Effect>
+                                Margin="0,15,0,0"
+                                Style="{DynamicResource PanelBorderStyle}">
                             <StackPanel Orientation="Vertical">
                                 <!-- Saved Searches Dropdown -->
                                 <Grid Margin="0,0,0,15">
@@ -377,18 +365,11 @@
                                                FontWeight="SemiBold" 
                                                Margin="0,0,0,8"
                                                FontSize="14"
-                                               Foreground="#2C3E50"/>
+                                               Style="{DynamicResource LabelTextStyle}"/>
                                     <Border Grid.Row="1"
-                                            Background="White"
-                                            BorderBrush="#D1D9E0"
                                             BorderThickness="2"
-                                            CornerRadius="8">
-                                        <Border.Effect>
-                                            <DropShadowEffect ShadowDepth="1" 
-                                                              BlurRadius="3" 
-                                                              Opacity="0.1"
-                                                              Color="#000000"/>
-                                        </Border.Effect>
+                                            CornerRadius="8"
+                                            Style="{DynamicResource InputBorderStyle}">
                                         <ComboBox ItemsSource="{Binding SavedSearches}"
                                                   SelectedItem="{Binding SelectedSavedSearch}"
                                                   Height="40"
@@ -528,13 +509,13 @@
                                FontWeight="Bold" 
                                Margin="0,0,0,12"
                                FontSize="16"
-                               Foreground="#1F2937"/>
+                               Style="{DynamicResource LabelTextStyle}"/>
 
                     <!-- DataGrid for Results with Enhanced Styling -->
-                    <Border Grid.Row="4" Background="White"
-                            BorderBrush="#E5E7EB"
+                    <Border Grid.Row="4" 
                             BorderThickness="1"
-                            CornerRadius="10">
+                            CornerRadius="10"
+                            Style="{DynamicResource DataGridBorderStyle}">
                         <DataGrid ItemsSource="{Binding SearchResults}"
                                   AutoGenerateColumns="False"
                                   CanUserAddRows="False"
@@ -546,7 +527,6 @@
                                   BorderThickness="0"
                                   HorizontalScrollBarVisibility="Auto"
                                   VerticalScrollBarVisibility="Auto"
-                                  AlternatingRowBackground="#FAFBFC"
                                   RowHeaderWidth="0"
                                   SelectionMode="Single"
                                   IsReadOnly="True"
@@ -700,75 +680,22 @@
                                     </DataGridTemplateColumn.CellTemplate>
                                 </DataGridTemplateColumn>
                             </DataGrid.Columns>
-                            
-                            <DataGrid.RowStyle>
-                                <Style TargetType="DataGridRow">
-                                    <Setter Property="Height" Value="45"/>
-                                    <Setter Property="MinHeight" Value="40"/>
-                                    <!-- Remove DropShadowEffect for performance -->
-                                    <Setter Property="Effect" Value="{x:Null}"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsMissing}" Value="True">
-                                            <Setter Property="Background" Value="#F9FAFB"/>
-                                            <Setter Property="Foreground" Value="#9CA3AF"/>
-                                        </DataTrigger>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="#EFF6FF"/>
-                                        </Trigger>
-                                        <Trigger Property="IsSelected" Value="True">
-                                            <Setter Property="Background" Value="#DBEAFE"/>
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </DataGrid.RowStyle>
-                            
-                            <DataGrid.ColumnHeaderStyle>
-                                <Style TargetType="DataGridColumnHeader">
-                                    <Setter Property="Background">
-                                        <Setter.Value>
-                                            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                                <GradientStop Color="#1F2937" Offset="0"/>
-                                                <GradientStop Color="#374151" Offset="1"/>
-                                            </LinearGradientBrush>
-                                        </Setter.Value>
-                                    </Setter>
-                                    <Setter Property="Foreground" Value="White"/>
-                                    <Setter Property="FontWeight" Value="SemiBold"/>
-                                    <Setter Property="FontSize" Value="14"/>
-                                    <Setter Property="Height" Value="45"/>
-                                    <Setter Property="Padding" Value="16,10"/>
-                                    <Setter Property="BorderBrush" Value="#4B5563"/>
-                                    <Setter Property="BorderThickness" Value="0,0,1,0"/>
-                                    <Setter Property="HorizontalContentAlignment" Value="Left"/>
-                                    <Setter Property="VerticalContentAlignment" Value="Center"/>
-                                </Style>
-                            </DataGrid.ColumnHeaderStyle>
                         </DataGrid>
                     </Border>
 
                     <!-- Status Bar with Enhanced Styling -->
                     <Border Grid.Row="5" CornerRadius="8"
-                            Margin="0,15,0,0">
-                        <Border.Background>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                                <GradientStop Color="#1F2937" Offset="0"/>
-                                <GradientStop Color="#374151" Offset="1"/>
-                            </LinearGradientBrush>
-                        </Border.Background>
-                        <Border.Effect>
-                            <DropShadowEffect ShadowDepth="2" 
-                                              BlurRadius="6" 
-                                              Opacity="0.15"
-                                              Color="#000000"/>
-                        </Border.Effect>
+                            Margin="0,15,0,0"
+                            Style="{DynamicResource StatusBarBorderStyle}">
                         <StatusBar Background="Transparent" 
-                                   Foreground="White"
-                                   Height="35">
+                                   Height="35"
+                                   Style="{DynamicResource StatusBarStyle}">
                             <StatusBarItem>
                                 <TextBlock Text="{Binding StatusText}" 
                                            FontSize="13"
                                            FontWeight="Medium"
-                                           Padding="15,8"/>
+                                           Padding="15,8"
+                                           Style="{DynamicResource StatusBarTextStyle}"/>
                             </StatusBarItem>
                         </StatusBar>
                     </Border>
@@ -777,11 +704,166 @@
         </Grid>
     </Border>
     
-    <!-- Enhanced Styles -->
+    <!-- Enhanced Styles with Dark Mode Support -->
     <Window.Resources>
         <!-- Converters -->
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <local:InverseBooleanConverter x:Key="InverseBooleanConverter"/>
+        
+        <!-- Base Styles (must be defined first) -->
+        
+        <!-- Modern TextBox Style (base for other TextBox styles) -->
+        <Style x:Key="ModernTextBoxStyle" TargetType="TextBox">
+            <Setter Property="Foreground" Value="#1F2937"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding DataContext.IsDarkMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                    <Setter Property="Foreground" Value="#F9FAFB"/>
+                </DataTrigger>
+                <Trigger Property="IsFocused" Value="True">
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect ShadowDepth="0" 
+                                              BlurRadius="5" 
+                                              Opacity="0.3"
+                                              Color="#3498DB"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        
+        <!-- Modern ComboBox Style -->
+        <Style x:Key="ModernComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Foreground" Value="#1F2937"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding DataContext.IsDarkMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                    <Setter Property="Foreground" Value="#F9FAFB"/>
+                </DataTrigger>
+                <Trigger Property="IsFocused" Value="True">
+                    <Setter Property="Effect">
+                        <Setter.Value>
+                            <DropShadowEffect ShadowDepth="0" 
+                                              BlurRadius="5" 
+                                              Opacity="0.3"
+                                              Color="#3498DB"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+        
+        <!-- Derived Styles (depend on base styles) -->
+        
+        <!-- ReadOnly TextBox Style (depends on ModernTextBoxStyle) -->
+        <Style x:Key="ReadOnlyTextBoxStyle" TargetType="TextBox" BasedOn="{StaticResource ModernTextBoxStyle}">
+            <Setter Property="Foreground" Value="#6B7280"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding DataContext.IsDarkMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                    <Setter Property="Foreground" Value="#9CA3AF"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        
+        <!-- Dark Mode Styles -->
+        <Style x:Key="PanelBorderStyle" TargetType="Border">
+            <Setter Property="Background" Value="#F0F2F5"/>
+            <Setter Property="BorderBrush" Value="#D1D9E0"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="2" BlurRadius="6" Opacity="0.1" Color="#000000"/>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding DataContext.IsDarkMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                    <Setter Property="Background" Value="#4B5563"/>
+                    <Setter Property="BorderBrush" Value="#6B7280"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        
+        <Style x:Key="InputBorderStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#D1D9E0"/>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="1" BlurRadius="3" Opacity="0.1" Color="#000000"/>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding DataContext.IsDarkMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                    <Setter Property="Background" Value="#374151"/>
+                    <Setter Property="BorderBrush" Value="#6B7280"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        
+        <Style x:Key="LabelTextStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#2C3E50"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding DataContext.IsDarkMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                    <Setter Property="Foreground" Value="#F9FAFB"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        
+        <Style x:Key="SubLabelTextStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="#6B7280"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding DataContext.IsDarkMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                    <Setter Property="Foreground" Value="#D1D5DB"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        
+        <Style x:Key="DataGridBorderStyle" TargetType="Border">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#E5E7EB"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding DataContext.IsDarkMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                    <Setter Property="Background" Value="#374151"/>
+                    <Setter Property="BorderBrush" Value="#6B7280"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        
+        <Style x:Key="StatusBarBorderStyle" TargetType="Border">
+            <Setter Property="Background">
+                <Setter.Value>
+                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                        <GradientStop Color="#1F2937" Offset="0"/>
+                        <GradientStop Color="#374151" Offset="1"/>
+                    </LinearGradientBrush>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="Effect">
+                <Setter.Value>
+                    <DropShadowEffect ShadowDepth="2" BlurRadius="6" Opacity="0.15" Color="#000000"/>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding DataContext.IsDarkMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                    <Setter Property="Background">
+                        <Setter.Value>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                <GradientStop Color="#111827" Offset="0"/>
+                                <GradientStop Color="#1F2937" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        
+        <Style x:Key="StatusBarStyle" TargetType="StatusBar">
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        
+        <Style x:Key="StatusBarTextStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        
+        <!-- Button Styles -->
         
         <!-- Primary Button Style -->
         <Style x:Key="PrimaryButtonStyle" TargetType="Button">
@@ -926,42 +1008,112 @@
             </Setter>
         </Style>
         
-        <!-- Modern TextBox Style -->
-        <Style x:Key="ModernTextBoxStyle" TargetType="TextBox">
-            <Style.Triggers>
-                <Trigger Property="IsFocused" Value="True">
-                    <Setter Property="Effect">
-                        <Setter.Value>
-                            <DropShadowEffect ShadowDepth="0" 
-                                              BlurRadius="5" 
-                                              Opacity="0.3"
-                                              Color="#3498DB"/>
-                        </Setter.Value>
-                    </Setter>
-                </Trigger>
-            </Style.Triggers>
+        <!-- Dark Mode Toggle Style -->
+        <Style x:Key="DarkModeToggleStyle" TargetType="ToggleButton">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="border"
+                                Background="#F39C12" 
+                                CornerRadius="8" 
+                                BorderThickness="0">
+                            <Border.Effect>
+                                <DropShadowEffect ShadowDepth="3" 
+                                                  BlurRadius="6" 
+                                                  Opacity="0.2"
+                                                  Color="#000000"/>
+                            </Border.Effect>
+                            <ContentPresenter HorizontalAlignment="Center" 
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="#6366F1"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.9"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.8"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
         
-        <!-- Modern ComboBox Style -->
-        <Style x:Key="ModernComboBoxStyle" TargetType="ComboBox">
-            <Style.Triggers>
-                <Trigger Property="IsFocused" Value="True">
-                    <Setter Property="Effect">
-                        <Setter.Value>
-                            <DropShadowEffect ShadowDepth="0" 
-                                              BlurRadius="5" 
-                                              Opacity="0.3"
-                                              Color="#3498DB"/>
-                        </Setter.Value>
-                    </Setter>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
+        <!-- DataGrid Styles -->
         
         <!-- Modern DataGrid Style -->
         <Style x:Key="ModernDataGridStyle" TargetType="DataGrid">
             <Setter Property="FontFamily" Value="Segoe UI"/>
             <Setter Property="FontSize" Value="13"/>
+            <Setter Property="AlternatingRowBackground" Value="#FAFBFC"/>
+            <Setter Property="RowStyle">
+                <Setter.Value>
+                    <Style TargetType="DataGridRow">
+                        <Setter Property="Height" Value="45"/>
+                        <Setter Property="MinHeight" Value="40"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsMissing}" Value="True">
+                                <Setter Property="Background" Value="#F9FAFB"/>
+                                <Setter Property="Foreground" Value="#9CA3AF"/>
+                            </DataTrigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#EFF6FF"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter Property="Background" Value="#DBEAFE"/>
+                            </Trigger>
+                            <DataTrigger Binding="{Binding DataContext.IsDarkMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                                <Setter Property="Background" Value="#4B5563"/>
+                                <Setter Property="Foreground" Value="#F9FAFB"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+            <Setter Property="ColumnHeaderStyle">
+                <Setter.Value>
+                    <Style TargetType="DataGridColumnHeader">
+                        <Setter Property="Background">
+                            <Setter.Value>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                    <GradientStop Color="#1F2937" Offset="0"/>
+                                    <GradientStop Color="#374151" Offset="1"/>
+                                </LinearGradientBrush>
+                            </Setter.Value>
+                        </Setter>
+                        <Setter Property="Foreground" Value="White"/>
+                        <Setter Property="FontWeight" Value="SemiBold"/>
+                        <Setter Property="FontSize" Value="14"/>
+                        <Setter Property="Height" Value="45"/>
+                        <Setter Property="Padding" Value="16,10"/>
+                        <Setter Property="BorderBrush" Value="#4B5563"/>
+                        <Setter Property="BorderThickness" Value="0,0,1,0"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+                        <Setter Property="VerticalContentAlignment" Value="Center"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding DataContext.IsDarkMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                                <Setter Property="Background">
+                                    <Setter.Value>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                            <GradientStop Color="#111827" Offset="0"/>
+                                            <GradientStop Color="#1F2937" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter Property="BorderBrush" Value="#374151"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding DataContext.IsDarkMode, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                    <Setter Property="AlternatingRowBackground" Value="#374151"/>
+                </DataTrigger>
+            </Style.Triggers>
         </Style>
         
         <!-- Legacy Styles for Compatibility -->

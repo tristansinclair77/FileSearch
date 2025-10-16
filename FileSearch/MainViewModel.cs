@@ -57,6 +57,7 @@ namespace FileSearch
         private Visibility _metadataPanelVisibility = Visibility.Collapsed;
         private ComboBoxItem _selectedSavedSearch;
         private int _maxDepth = 1; // Default to 1 as requested
+        private bool _isDarkMode = false; // Dark mode toggle
         
         // Metadata display properties
         private string _metadataSearchTerm = string.Empty;
@@ -187,6 +188,25 @@ namespace FileSearch
             }
         }
 
+        /// <summary>
+        /// Gets or sets whether dark mode is enabled
+        /// </summary>
+        public bool IsDarkMode
+        {
+            get => _isDarkMode;
+            set
+            {
+                _isDarkMode = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(DarkModeText));
+            }
+        }
+
+        /// <summary>
+        /// Gets the display text for the dark mode toggle
+        /// </summary>
+        public string DarkModeText => IsDarkMode ? "?? Dark Mode" : "?? Light Mode";
+
         // Metadata display properties
         public string MetadataSearchTerm
         {
@@ -284,6 +304,7 @@ namespace FileSearch
         public ICommand DeleteFileCommand { get; private set; }
         public ICommand SelectAllFileTypesCommand { get; private set; }
         public ICommand SelectNoneFileTypesCommand { get; private set; }
+        public ICommand ToggleDarkModeCommand { get; private set; }
 
         private void InitializeCommands()
         {
@@ -299,6 +320,17 @@ namespace FileSearch
             DeleteFileCommand = new RelayCommand<SearchResult>(DeleteFile, result => result != null && !result.IsMissing);
             SelectAllFileTypesCommand = new RelayCommand(_ => SelectAllFileTypes());
             SelectNoneFileTypesCommand = new RelayCommand(_ => SelectNoneFileTypes());
+            ToggleDarkModeCommand = new RelayCommand(_ => ToggleDarkMode());
+        }
+
+        #endregion
+
+        #region Dark Mode Methods
+
+        private void ToggleDarkMode()
+        {
+            IsDarkMode = !IsDarkMode;
+            StatusText = IsDarkMode ? "Switched to dark mode" : "Switched to light mode";
         }
 
         #endregion

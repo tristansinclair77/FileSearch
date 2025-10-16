@@ -1,9 +1,7 @@
 ﻿Implement these changes:
-1) Next to the search input text field, add a dropdown with a list of file types to look for. I want the ability to select multiple within this list, and by default all are select. The top two options need to be "All" and "None" with All selecting every other option, and None deselecting all options.
 2) I want to add a preview panel that displays the image if the file I mouse over in the data grid is an image file. You choose where to put this; we can move it later.
 3) Next to the select folder button, add a "recent folders" dropdown that lists the last 5 folders I have searched in. Selecting one of these should set that folder as the current folder again. This dropdown's list should be saved as a temporary file; we don't need to persist it.
 4) Allow drag & drop for the select folder section, where dragging a folder into that area sets it as the current folder.
-5) Add a "Dark Mode" toggle option somewhere in the UI. Toggling this on changes the color scheme of the entire application to a dark theme. Toggling it off reverts.
 
 
 Update the README.md with the changes/adjustments from this task if necessary.
